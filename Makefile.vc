@@ -1,0 +1,21 @@
+
+SOURCES = main.c rendering.c bmp_loader.c
+OBJECTS = $(SOURCES:.c=.obj)
+
+CL = cl
+LINK = link
+CFLAGS = /nologo /TP /Ifreeglut/include
+LDFLAGS = /nologo /LIBPATH:freeglut/lib
+
+all: solar
+
+.c.obj:
+	$(CL) $(CFLAGS) /c $< /Fo$@
+
+solar: $(OBJECTS)
+	$(LINK) $(LDFLAGS) $** $(LIBS) /OUT:$@.exe
+
+clean:
+	del *.obj *.exe
+
+.PHONY: clean
