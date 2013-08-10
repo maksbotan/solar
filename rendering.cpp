@@ -11,18 +11,17 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#include <vector>
 
 #include "constants.h"
+#include "planet.h"
 
-static GLfloat earthX = -1.0f, earthZ = 0.0f;
-static GLfloat earthPHI = -M_PI, earthPhase = 0.0f;
-static GLfloat moonX = 0.2f, moonZ = 0.0f;
-static GLfloat moonPHI = 0.0f;
 static GLfloat sunPhase = 0.0f;
 static GLfloat days = 0.0f;
-static GLuint months = 0;
 
-GLuint earthTexture = 0, moonTexture = 0, starsTexture = 0, sunTexture = 0;
+static std::vector<Planet> planets;
+
+GLuint starsTexture = 0, sunTexture = 0;
 
 void drawAxes() {
     glLineWidth(3.0f);
@@ -68,82 +67,6 @@ void drawSun() {
     gluDeleteQuadric(sun);
     glBindTexture(GL_TEXTURE_2D, 0);
     glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero_emission);
-
-    glPopMatrix();
-}
-
-void drawEcliptic() {
-    glPushMatrix();
-
-    glRotatef(ECLIPTIC_INCLINATION, 0.0f, 1.0f, 0.0f);
-
-    glColor3f(0.8, 0.8, 0.8);
-    glBegin(GL_QUADS);
-        glVertex3f(-1.0f, 0.0f, 1.0f);
-        glVertex3f(-1.0f, 0.0f, -1.0f);
-        glVertex3f(1.0f, 0.0f, -1.0f);
-        glVertex3f(1.0f, 0.0f, 1.0f);
-    glEnd();
-
-    glPopMatrix();
-}
-
-void drawEarth() {
-    glPushMatrix();
-
-    glTranslatef(earthX, 0.0f, earthZ);
-
-    glRotatef(ECLIPTIC_INCLINATION, 0.0f, 1.0f, 0.0f); // Ecliptic is inclined wrt sun equator
-    glRotatef(EARTH_AXIS_INCLINATION, 1.0f, 0.0f, 0.0f); // Earth axis is inclined wrt ecliptic
-    glRotatef(earthPhase, 0.0f, 1.0f, 0.0f); // Finally handle everyday rotation
-
-    // First draw axis
-    glLineWidth(3.0f);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glBegin(GL_LINES);
-    glVertex3f(0.0f, -EARTH_AXIS_HALFSIZE, 0.0f);
-    glVertex3f(0.0f, EARTH_AXIS_HALFSIZE, 0.0f);
-    glEnd();
-
-    glRotatef(90.0f, -1.0f, 0.0f, 0.0f); // Rotate a bit so texture is applied correctly
-    glBindTexture(GL_TEXTURE_2D, earthTexture);
-
-    GLUquadricObj *earth = gluNewQuadric();
-    gluQuadricDrawStyle(earth, GLU_FILL);
-    gluQuadricTexture(earth, GLU_TRUE);
-    gluQuadricNormals(earth, GLU_SMOOTH);
-
-    gluSphere(earth, EARTH_RADIUS, 50, 50);
-
-    gluDeleteQuadric(earth);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glPopMatrix();
-}
-
-void drawMoon() {
-    glPushMatrix();
-
-    // Bring origin to Earth center
-    glTranslatef(earthX, 0.0f, earthZ);
-    glRotatef(ECLIPTIC_INCLINATION, 0.0f, 1.0f, 0.0f);
-    glRotatef(MOON_INCLINATION, 0.0f, 1.0f, 0.0f); // Now we are in plane of Moon's orbit
-
-    glTranslatef(moonX, 0.0f, moonZ); // Bring us to actual moon position on orbit
-    glRotatef(90.0f, -1.0f, 0.0f, 0.0f); // Correct for texturing again
-    glRotatef(-45.0f, 0.0f, 0.0f, 1.0f);
-
-    glBindTexture(GL_TEXTURE_2D, moonTexture);
-
-    GLUquadricObj *moon = gluNewQuadric();
-    gluQuadricDrawStyle(moon, GLU_FILL);
-    gluQuadricTexture(moon, GLU_TRUE);
-    gluQuadricNormals(moon, GLU_SMOOTH);
-
-    gluSphere(moon, MOON_RADIUS, 50, 50);
-
-    gluDeleteQuadric(moon);
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     glPopMatrix();
 }
@@ -209,6 +132,8 @@ void drawStats() {
 
     drawText(elapsedMonthsText, 10, 40, 1.0f, 1.0f, 1.0f, 0);
 
+    GLuint months = floorf(days / SIDERIAL_MONTH);
+
     int months_len = snprintf(NULL, 0, "%u", months) + 1;
     char *months_str = (char*) malloc(months_len);
     snprintf(months_str, months_len, "%u", months);
@@ -216,30 +141,26 @@ void drawStats() {
     free(months_str);
 }
 
+void initPlanets() {
+    planets.push_back(Planet(EARTH_RADIUS, 1.0f, SIDERIAL_YEAR, 1.0f, ECLIPTIC_INCLINATION, EARTH_AXIS_INCLINATION, "textures/earth.bmp", -M_PI));
+    planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 0.0f, "textures/moon.bmp", 0.0f));
+
+    //                       Radius               Orbit  Year    Day      Incl   Tilt    Texture                 Phase
+    planets.push_back(Planet(EARTH_RADIUS * 0.38, 0.39f, 87.9f,  58.6f,   3.38f, 0.03f,  "textures/mercury.bmp", -M_PI)); // Mercury
+    planets.push_back(Planet(EARTH_RADIUS * 0.93, 0.7f,  224.7f, -243.0f, 3.7f,  177.3f, "textures/venus.bmp",   -M_PI)); // Venus
+    planets.push_back(Planet(EARTH_RADIUS * 0.53, 1.52f, 686.9f, 1.02f,   5.65f, 25.19f, "textures/mars.bmp",    -M_PI)); // Mars
+}
+
+void drawPlanets() {
+    for (Planet &planet : planets)
+        planet.render();
+}
+
 void physicsStep() {
-    // First recalculate Earth's position on orbit
-    earthPHI += DAYS_PER_SECOND * 2*M_PI / (FPS * SIDERIAL_YEAR);
-    if (earthPHI > 2*M_PI) // Keep it small
-        earthPHI -= 2*M_PI;
+    for (Planet &planet : planets)
+        planet.physicsStep(0);
 
     days += DAYS_PER_SECOND / FPS;
-
-    earthX = cos(-earthPHI);
-    earthZ = sin(-earthPHI);
-
-    // Then handle its rotation: one full revolution each day
-    earthPhase += 360 * (double) DAYS_PER_SECOND / FPS;
-    if (earthPhase >= 360) // earthPhase is in degrees
-        earthPhase -= 360;
-
-    // Moon orbital movement
-    moonPHI += DAYS_PER_SECOND * 2*M_PI / (FPS * SIDERIAL_MONTH);
-    moonX = MOON_ORBIT_RADIUS * cosf(-moonPHI);
-    moonZ = MOON_ORBIT_RADIUS * sinf(-moonPHI);
-    if (moonPHI > 2*M_PI) {
-        moonPHI -= 2*M_PI;
-        months++;
-    }
 
     // Sun rotation
     sunPhase += 360 * DAYS_PER_SECOND / (FPS * SUN_SIDERIAL_PERIOD);

@@ -5,11 +5,19 @@ Features
 
 Right now the model has following features:
 
-* Earth's orbit plane (ecliptic) is inclined to the Sun's equator plane at the real angle
-* Earth's axis is inclined to ecliptic at the real angle
-* Moon orbit plane is inclined to ecliptic at the real angle
+* Following planets are present:
+    - Mercury
+    - Venus
+    - Earth with Moon
+    - Mars
+* Planets' orbit planes (ecliptic) are inclined to the Sun's equator plane at the correct angle
+* Planets' axial tilts are correct
+* Moon orbit plane is inclined to ecliptic at the correct angle
 * Time goes in real scale: 1 day per 1 second by default, configurable in sources
-* Earth's, Moon's and Sun's periods of revolutions are real
+* All stellar bodies orbital and siderial periods of revolutions are correct
+* Planets sizes and orbit radiuses ratios are correct
+
+*Note*: Earth, Moon and Sun radiuses themselves are arbitrary
 
 Controls
 ========
@@ -28,7 +36,7 @@ Linux
 
 You will need:
 
-* Working C compiler (gcc or clang)
+* Working C++ compiler (g++ or clang++)
 * OpenGL headers and libraries
 * FreeGLUT headers and libraries
 * GNU compatible make
@@ -60,3 +68,8 @@ First of all, unpack `freeglut-MSVC.zip` to this directory. Then copy `glext.h` 
 If all goes well, you will get `solar.exe` file. In order to run it, copy `freeglut.dll` from `freeglut\bin` to this directory.
 
 *Note*: if you have 64-bit Windows, you'll probably need to add `\x64` to freeglut paths in `Makefile.vc`
+
+Licensing
+---------
+
+The program itself is licensed unser 2-clause BSD license, see `LICENSE`. Textures are taken from <http://www.celestiamotherlode.net>, which claims they are free for non-commercial use.

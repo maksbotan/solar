@@ -9,10 +9,12 @@
 
 #include <GL/gl.h>
 #include <GL/glut.h>
+#include <vector>
 
 #include "constants.h"
 #include "rendering.h"
 #include "bmp_loader.h"
+#include "planet.h"
 
 static GLfloat xrot = 25.0f, yrot = 30.0f, zrot = 0.0f;
 static GLfloat zoom = 5.0f;
@@ -34,11 +36,8 @@ void renderScene(void) {
     //drawAxes();
     drawSky();
 
-    //drawEcliptic();
     drawSun();
-    drawEarth();
-    drawMoon();
-
+    drawPlanets();
     drawStats();
 
     glutSwapBuffers();
@@ -153,7 +152,7 @@ int main(int argc, char* argv[]) {
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
 
-    GLfloat sun_d[] = {4.0f, 4.0f, 4.0f, 1.0f};
+    GLfloat sun_d[] = {7.0f, 7.0f, 7.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_DIFFUSE, sun_d);
     glEnable(GL_LIGHT0);
 
@@ -166,15 +165,13 @@ int main(int argc, char* argv[]) {
 
     glutTimerFunc(1000 / FPS, timer, 0);
 
-    earthTexture = loadBMPTexture("earth.bmp");
-    moonTexture = loadBMPTexture("moon.bmp");
-    starsTexture = loadBMPTexture("starmap.bmp");
-    sunTexture = loadBMPTexture("sun.bmp");
+    initPlanets();
+
+    starsTexture = loadBMPTexture("textures/starmap.bmp");
+    sunTexture = loadBMPTexture("textures/sun.bmp");
 
     glutMainLoop();
 
-    glDeleteTextures(1, &earthTexture);
-    glDeleteTextures(1, &moonTexture);
     glDeleteTextures(1, &starsTexture);
     glDeleteTextures(1, &sunTexture);
 

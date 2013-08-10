@@ -1,18 +1,18 @@
 
-SOURCES = main.c rendering.c bmp_loader.c
-OBJECTS = $(SOURCES:.c=.o)
+SOURCES = main.cpp rendering.cpp bmp_loader.cpp planet.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
 
-CC = clang
-CFLAGS ?= -Wall -Wextra -g -ggdb
+CXX = clang++
+CXXFLAGS ?= -Wall -Wextra -g -ggdb
 LIBS = -lGL -lGLU -lglut
 
 all: solar
 
-.c.o:
-	$(CC) $(CFLAGS) -c $< -o $@
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -std=c++11 -c $< -o $@
 
 solar: $(OBJECTS)
-	$(CC) $(LDFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 clean:
 	rm -rf *.o solar
