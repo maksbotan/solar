@@ -16,7 +16,7 @@ void drawSky();
 void drawText(const char *text, GLuint x, GLuint y, GLfloat r, GLfloat g, GLfloat b, GLubyte cont);
 void drawStats();
 void initPlanets();
-void drawPlanets();
+void drawPlanets(bool orbits = false);
 void physicsStep();
 
 #endif

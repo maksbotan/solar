@@ -7,6 +7,7 @@
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <GL/glut.h>
 
 #include "constants.h"
 #include "bmp_loader.h"
@@ -66,20 +67,28 @@ void Planet::physicsStep(int elapsed) {
         it->physicsStep(elapsed);
 }
 
-void Planet::render() {
+void Planet::render(bool orbit) {
     glPushMatrix();
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    glRotatef(orbit_inclination, 0.0f, 0.0f, 1.0f);
+
+    if (orbit) {
+        glPushMatrix();
+        glRotatef(90.f, 1.0f, 0.0f, 0.0f);
+        glutSolidTorus(0.0007f, orbit_radius, 100, 100);
+        glPopMatrix();
+    }
 
     glTranslatef(orbitX, 0.0f, orbitZ);
 
-    glRotatef(orbit_inclination, 0.0f, 1.0f, 0.0f); // Orbit is inclined wrt sun equator
-
     for (auto it = moons.begin(); it != moons.end(); it++)
-        it->render();
+        it->render(orbit);
 
     glRotatef(axis_inclination, 1.0f, 0.0f, 0.0f); // Axis is inclined wrt orbit
     glRotatef(phase, 0.0f, 1.0f, 0.0f); // Finally handle everyday rotation
 
-    glColor3f(1.0f, 1.0f, 1.0f);
     glRotatef(90.0f, -1.0f, 0.0f, 0.0f); // Rotate a bit so texture is applied correctly
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -92,6 +101,7 @@ void Planet::render() {
 
     gluDeleteQuadric(planet);
     glBindTexture(GL_TEXTURE_2D, 0);
+
 
     glPopMatrix();
 }

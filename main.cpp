@@ -19,6 +19,8 @@
 static GLfloat xrot = 25.0f, yrot = 30.0f, zrot = 0.0f;
 static GLfloat zoom = 5.0f;
 static GLfloat xpos = 0.0f, ypos = 0.0f, zpos = 0.0f;
+static int windowW = 800, windowH = 600;
+static bool fullscreen = false, orbits = false;
 
 void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -37,7 +39,7 @@ void renderScene(void) {
     drawSky();
 
     drawSun();
-    drawPlanets();
+    drawPlanets(orbits);
     drawStats();
 
     glutSwapBuffers();
@@ -138,12 +140,28 @@ void keyboard(unsigned char key, int x, int y) {
             zoom = 5.0f;
             xpos = 0.0f, ypos = 0.0f, zpos = 0.0f;
             break;
+        case 'F':
+        case 'f':
+            if (fullscreen)
+                glutReshapeWindow(windowW, windowH);
+            else {
+                windowW = glutGet(GLUT_WINDOW_WIDTH);
+                windowH = glutGet(GLUT_WINDOW_HEIGHT);
+                glutFullScreen();
+            }
+            fullscreen = !fullscreen;
+            break;
+        case 'O':
+        case 'o':
+            orbits = !orbits;
+            break;
     }
 }
 
 int main(int argc, char* argv[]) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    glutInitWindowSize(windowW, windowH);
     glutCreateWindow("Earth orbits Sun");
 
     glEnable(GL_COLOR_MATERIAL);

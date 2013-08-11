@@ -26,6 +26,8 @@ Controls
 * left, right, up, down arrows, PgUp and PgDown - camera rotation along three axes
 * -, + - zooming
 * r - return camera to initial position
+* f - toggle fullscreen mode
+* o - toggle orbits
 * q - quit program
 
 Compilation
@@ -72,4 +74,4 @@ If all goes well, you will get `solar.exe` file. In order to run it, copy `freeg
 Licensing
 =========
 
-The program itself is licensed unser 2-clause BSD license, see `LICENSE`. Textures are taken from <http://www.celestiamotherlode.net>, which claims they are free for non-commercial use.
+The program itself is licensed under 2-clause BSD license, see `LICENSE`. Textures are taken from <http://www.celestiamotherlode.net>, which claims they are free for non-commercial use.

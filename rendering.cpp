@@ -151,9 +151,9 @@ void initPlanets() {
     planets.push_back(Planet(EARTH_RADIUS * 0.53, 1.52f, 686.9f, 1.02f,   5.65f, 25.19f, "textures/mars.bmp",    -M_PI)); // Mars
 }
 
-void drawPlanets() {
+void drawPlanets(bool orbits) {
     for (auto it = planets.begin(); it != planets.end(); it++)
-        it->render();
+        it->render(orbits);
 }
 
 void physicsStep() {

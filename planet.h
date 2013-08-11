@@ -23,7 +23,7 @@ public:
     Planet(Planet &&rvalue);
     ~Planet();
     void physicsStep(int elapsed);
-    void render();
+    void render(bool orbit = false);
     void addMoon(Planet &&moon); // Use rvalue reference to always steal caller's object - avoids copying OpenGL textures
 };
 
