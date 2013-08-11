@@ -1,11 +1,10 @@
 
-#include <math.h>
-#include <stdio.h>
-
 // windows.h must be included before GL headers
 #ifdef _MSC_VER
+#define _USE_MATH_DEFINES
 #include <windows.h>
 #endif
+#include <math.h>
 
 #include <GL/gl.h>
 #include <GL/glut.h>
@@ -16,24 +15,24 @@
 #include "bmp_loader.h"
 #include "planet.h"
 
-static GLfloat xrot = 25.0f, yrot = 30.0f, zrot = 0.0f;
-static GLfloat zoom = 5.0f;
-static GLfloat xpos = 0.0f, ypos = 0.0f, zpos = 0.0f;
+static GLfloat xpos = 0.0f, ypos = 1.0f, zpos = 2.5f;
+static GLfloat sight_x = 0.0f, sight_y = -0.43f, sight_z = -0.9f;
+static GLfloat up_x = 0.0f, up_y = 1.0f;
+static GLfloat cam_xz_angle = 0.0f, cam_y_angle = -0.45f;
+static GLfloat cam_z_angle = M_PI_2;
 static int windowW = 800, windowH = 600;
 static bool fullscreen = false, orbits = false;
 
 void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    glTranslatef(xpos, ypos, -10.0f + zpos); // -10.0f brings origin into glFrustum's FOV
+
+    gluLookAt(xpos,           ypos,           zpos,
+              xpos + sight_x, ypos + sight_y, zpos + sight_z,
+              up_x,           up_y,           0.0f);
+
     GLfloat sun_p[] = {0.0f, 0.0f, 0.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, sun_p);
-
-    glRotatef(xrot, 1.0f, 0.0f, 0.0f);
-    glRotatef(yrot, 0.0f, 1.0f, 0.0f);
-    glRotatef(zrot, 0.0f, 0.0f, 1.0f);
-
-    glScalef(zoom, zoom, zoom);
 
     //drawAxes();
     drawSky();
@@ -46,15 +45,15 @@ void renderScene(void) {
 }
 
 void reshape(int w, int h) {
+    if (!h)
+        h = 1;
+
     glViewport(0, 0, (GLint) w, (GLint) h);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    if (w > h)
-        glFrustum(-1.0, 1.0, - (double) h/w, (double) h/w, 1.0, 40.0);
-    else
-        glFrustum(- (double) w/h, (double) w/h, -1.0, 1.0, 1.0, 40.0);
+    gluPerspective(45.0f, (float) w/h, 0.1f, 50.0f);
 
     glMatrixMode(GL_MODELVIEW);
 }
@@ -74,22 +73,36 @@ void special(int key, int x, int y) {
 
     switch (key) {
         case GLUT_KEY_LEFT:
-            yrot += 0.5f;
+            cam_xz_angle -= 0.02f;
+            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
+            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
             break;
         case GLUT_KEY_RIGHT:
-            yrot -= 0.5f;
+            cam_xz_angle += 0.02f;
+            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
+            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
             break;
         case GLUT_KEY_UP:
-            xrot += 0.5f;
+            cam_y_angle += 0.02;
+            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
+            sight_y = sinf(cam_y_angle);
+            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
             break;
         case GLUT_KEY_DOWN:
-            xrot -= 0.5f;
+            cam_y_angle -= 0.02f;
+            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
+            sight_y = sinf(cam_y_angle);
+            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
             break;
         case GLUT_KEY_PAGE_UP:
-            zrot -= 0.5f;
+            cam_z_angle += 0.02f;
+            up_x = cosf(cam_z_angle);
+            up_y = sinf(cam_z_angle);
             break;
         case GLUT_KEY_PAGE_DOWN:
-            zrot += 0.5f;
+            cam_z_angle -= 0.02f;
+            up_x = cosf(cam_z_angle);
+            up_y = sinf(cam_z_angle);
             break;
     }
 }
@@ -99,32 +112,27 @@ void keyboard(unsigned char key, int x, int y) {
     (void) y;
 
     switch (key) {
-        case '+':
-        case '=':
-            zoom += 0.05f;
-            break;
-        case '-':
-            zoom -= 0.05f;
-            break;
         case 'Q':
         case 'q':
             exit(0);
             break;
         case 'W':
         case 'w':
-            zpos += 0.05f;
+            xpos += sight_x * 0.08f;
+            zpos += sight_z * 0.08f;
             break;
         case 'S':
         case 's':
-            zpos -= 0.05f;
+            xpos -= sight_x * 0.08f;
+            zpos -= sight_z * 0.08f;
             break;
         case 'A':
         case 'a':
-            xpos += 0.05f;
+            xpos -= 0.05f;
             break;
         case 'D':
         case 'd':
-            xpos -= 0.05f;
+            xpos += 0.05f;
             break;
         case 'Z':
         case 'z':
@@ -136,9 +144,11 @@ void keyboard(unsigned char key, int x, int y) {
             break;
         case 'R':
         case 'r':
-            xrot = 25.0f, yrot = 30.0f, zrot = 0.0f;
-            zoom = 5.0f;
-            xpos = 0.0f, ypos = 0.0f, zpos = 0.0f;
+            xpos = 0.0f, ypos = 1.0f, zpos = 2.5f;
+            sight_x = 0.0f, sight_y = -0.43f, sight_z = -0.9f;
+            up_x = 0.0f, up_y = 1.0f;
+            cam_xz_angle = 0.0f, cam_y_angle = -0.45f;
+            cam_z_angle = M_PI_2;
             break;
         case 'F':
         case 'f':

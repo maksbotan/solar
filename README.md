@@ -24,7 +24,6 @@ Controls
 
 * w, a, s, d, z, x - camera movement along three axes
 * left, right, up, down arrows, PgUp and PgDown - camera rotation along three axes
-* -, + - zooming
 * r - return camera to initial position
 * f - toggle fullscreen mode
 * o - toggle orbits
