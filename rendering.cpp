@@ -142,13 +142,13 @@ void drawStats() {
 }
 
 void initPlanets() {
-    planets.push_back(Planet(EARTH_RADIUS, 1.0f, SIDERIAL_YEAR, 1.0f, ECLIPTIC_INCLINATION, EARTH_AXIS_INCLINATION, "textures/earth.bmp", -M_PI));
-    planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 0.0f, "textures/moon.bmp", 0.0f));
+    planets.push_back(Planet(EARTH_RADIUS, 1.0f, 0.016f, SIDERIAL_YEAR, 1.0f, ECLIPTIC_INCLINATION, EARTH_AXIS_INCLINATION, "textures/earth.bmp", -M_PI));
+    planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, 0.05f, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 0.0f, "textures/moon.bmp", 0.0f));
 
-    //                       Radius               Orbit  Year    Day      Incl   Tilt    Texture                 Phase
-    planets.push_back(Planet(EARTH_RADIUS * 0.38, 0.39f, 87.9f,  58.6f,   3.38f, 0.03f,  "textures/mercury.bmp", -M_PI)); // Mercury
-    planets.push_back(Planet(EARTH_RADIUS * 0.93, 0.7f,  224.7f, -243.0f, 3.7f,  177.3f, "textures/venus.bmp",   -M_PI)); // Venus
-    planets.push_back(Planet(EARTH_RADIUS * 0.53, 1.52f, 686.9f, 1.02f,   5.65f, 25.19f, "textures/mars.bmp",    -M_PI)); // Mars
+    //                       Radius               A      Ecc     Year    Day      Incl   Tilt    Texture                 Phase
+    planets.push_back(Planet(EARTH_RADIUS * 0.38, 0.39f, 0.2f,  87.9f,  58.6f,   3.38f, 0.03f,  "textures/mercury.bmp", -M_PI)); // Mercury
+    planets.push_back(Planet(EARTH_RADIUS * 0.93, 0.7f,  0.006f,224.7f, -243.0f, 3.7f,  177.3f, "textures/venus.bmp",   -M_PI)); // Venus
+    planets.push_back(Planet(EARTH_RADIUS * 0.53, 1.52f, 0.09f, 686.9f, 1.02f,   5.65f, 25.19f, "textures/mars.bmp",    -M_PI)); // Mars
 }
 
 void drawPlanets(bool orbits) {

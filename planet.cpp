@@ -13,9 +13,9 @@
 #include "bmp_loader.h"
 #include "planet.h"
 
-Planet::Planet(GLfloat radius_, GLfloat orbit_radius_, GLfloat siderial_year_, GLfloat siderial_day_, GLfloat orbit_inclination_, GLfloat axis_inclination_, const char *texture_file, GLfloat phi) :
+Planet::Planet(GLfloat radius_, GLfloat semimajor_axis_, GLfloat eccentricity, GLfloat siderial_year_, GLfloat siderial_day_, GLfloat orbit_inclination_, GLfloat axis_inclination_, const char *texture_file, GLfloat phi) :
     radius(radius_),
-    orbit_radius(orbit_radius_),
+    semimajor_axis(semimajor_axis_),
     siderial_year(siderial_year_),
     siderial_day(siderial_day_),
     orbit_inclination(orbit_inclination_),
@@ -25,12 +25,14 @@ Planet::Planet(GLfloat radius_, GLfloat orbit_radius_, GLfloat siderial_year_, G
     orbitPHI(phi),
     phase(0.0f)
 {
+    semiminor_axis = semimajor_axis * sqrtf(1.0f - eccentricity*eccentricity);
     texture = loadBMPTexture(texture_file);
 }
 
 Planet::Planet(Planet &&rvalue) :
     radius(rvalue.radius),
-    orbit_radius(rvalue.orbit_radius),
+    semimajor_axis(rvalue.semimajor_axis),
+    semiminor_axis(rvalue.semiminor_axis),
     siderial_year(rvalue.siderial_year),
     siderial_day(rvalue.siderial_day),
     orbit_inclination(rvalue.orbit_inclination),
@@ -56,8 +58,8 @@ void Planet::physicsStep(int elapsed) {
         orbitPHI -= 2*M_PI; // Keep it small
 
     // '-' for counterclockwise orbiting
-    orbitX = orbit_radius * cos(-orbitPHI);
-    orbitZ = orbit_radius * sin(-orbitPHI);
+    orbitX = semimajor_axis * cos(-orbitPHI);
+    orbitZ = semiminor_axis * sin(-orbitPHI);
 
     phase += 360 * DAYS_PER_SECOND / (FPS * siderial_day);
     if (phase >= 360.0f)
@@ -77,7 +79,8 @@ void Planet::render(bool orbit) {
     if (orbit) {
         glPushMatrix();
         glRotatef(90.f, 1.0f, 0.0f, 0.0f);
-        glutSolidTorus(0.0007f, orbit_radius, 5, 100);
+        glScalef(1.0f, semiminor_axis / semimajor_axis, 1.0f);
+        glutSolidTorus(0.0007f, semimajor_axis, 5, 100);
         glPopMatrix();
     }
 
