@@ -77,7 +77,7 @@ void Planet::render(bool orbit) {
     if (orbit) {
         glPushMatrix();
         glRotatef(90.f, 1.0f, 0.0f, 0.0f);
-        glutSolidTorus(0.0007f, orbit_radius, 100, 100);
+        glutSolidTorus(0.0007f, orbit_radius, 5, 100);
         glPopMatrix();
     }
 
