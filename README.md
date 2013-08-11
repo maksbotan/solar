@@ -70,6 +70,6 @@ If all goes well, you will get `solar.exe` file. In order to run it, copy `freeg
 *Note*: if you have 64-bit Windows, you'll probably need to add `\x64` to freeglut paths in `Makefile.vc`
 
 Licensing
----------
+=========
 
 The program itself is licensed unser 2-clause BSD license, see `LICENSE`. Textures are taken from <http://www.celestiamotherlode.net>, which claims they are free for non-commercial use.
