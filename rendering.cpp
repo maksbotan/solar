@@ -152,13 +152,13 @@ void initPlanets() {
 }
 
 void drawPlanets() {
-    for (Planet &planet : planets)
-        planet.render();
+    for (auto it = planets.begin(); it != planets.end(); it++)
+        it->render();
 }
 
 void physicsStep() {
-    for (Planet &planet : planets)
-        planet.physicsStep(0);
+    for (auto it = planets.begin(); it != planets.end(); it++)
+        it->physicsStep(0);
 
     days += DAYS_PER_SECOND / FPS;
 

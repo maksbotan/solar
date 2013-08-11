@@ -41,8 +41,8 @@ Planet::Planet(Planet &&rvalue) :
 {
     texture = rvalue.texture;
     rvalue.texture = 0;
-    for (Planet & moon : rvalue.moons)
-        moons.push_back(std::move(moon));
+    for (auto it = rvalue.moons.begin(); it != rvalue.moons.end(); it++)
+        moons.push_back(std::move(*it));
 }
 
 Planet::~Planet() {
@@ -62,8 +62,8 @@ void Planet::physicsStep(int elapsed) {
     if (phase >= 360.0f)
         phase -= 360.0f;
 
-    for (Planet &moon : moons)
-        moon.physicsStep(elapsed);
+    for (auto it = moons.begin(); it != moons.end(); it++)
+        it->physicsStep(elapsed);
 }
 
 void Planet::render() {
@@ -73,8 +73,8 @@ void Planet::render() {
 
     glRotatef(orbit_inclination, 0.0f, 1.0f, 0.0f); // Orbit is inclined wrt sun equator
 
-    for (Planet &moon : moons)
-        moon.render();
+    for (auto it = moons.begin(); it != moons.end(); it++)
+        it->render();
 
     glRotatef(axis_inclination, 1.0f, 0.0f, 0.0f); // Axis is inclined wrt orbit
     glRotatef(phase, 0.0f, 1.0f, 0.0f); // Finally handle everyday rotation
