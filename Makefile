@@ -2,7 +2,7 @@
 SOURCES = main.cpp rendering.cpp bmp_loader.cpp planet.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
-CXX = clang++
+CXX ?= clang++
 CXXFLAGS ?= -Wall -Wextra -g -ggdb
 LIBS = -lGL -lGLU -lglut
 
