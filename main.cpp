@@ -83,12 +83,16 @@ void special(int key, int x, int y) {
             sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
             break;
         case GLUT_KEY_UP:
+            if (cam_y_angle > M_PI / 3) // Do not look up to avoid gimbal locks and other problems
+                break;
             cam_y_angle += 0.02;
             sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
             sight_y = sinf(cam_y_angle);
             sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
             break;
         case GLUT_KEY_DOWN:
+            if (cam_y_angle < -M_PI / 3) // And do not look down
+                break;
             cam_y_angle -= 0.02f;
             sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
             sight_y = sinf(cam_y_angle);
@@ -119,28 +123,34 @@ void keyboard(unsigned char key, int x, int y) {
         case 'W':
         case 'w':
             xpos += sight_x * 0.08f;
+            ypos += sight_y * 0.08f;
             zpos += sight_z * 0.08f;
             break;
         case 'S':
         case 's':
             xpos -= sight_x * 0.08f;
+            ypos -= sight_y * 0.08f;
             zpos -= sight_z * 0.08f;
             break;
         case 'A':
         case 'a':
-            xpos -= 0.05f;
+            xpos -= -sight_z * 0.08f;
+            zpos -= sight_x * 0.08f;
             break;
         case 'D':
         case 'd':
-            xpos += 0.05f;
+            xpos += -sight_z * 0.08f;
+            zpos += sight_x * 0.08f;
             break;
         case 'Z':
         case 'z':
-            ypos += 0.05f;
+            ypos += -sight_z * 0.08f;
+            zpos += sight_y * 0.08f;
             break;
         case 'X':
         case 'x':
-            ypos -= 0.05f;
+            ypos -= -sight_z * 0.08f;
+            zpos -= sight_y * 0.08f;
             break;
         case 'R':
         case 'r':
