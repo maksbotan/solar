@@ -22,6 +22,7 @@ static GLfloat cam_xz_angle = 0.0f, cam_y_angle = -0.45f;
 static GLfloat cam_z_angle = M_PI_2;
 static int windowW = 800, windowH = 600;
 static bool fullscreen = false, orbits = false;
+static int last_time = 0;
 
 void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -61,10 +62,13 @@ void reshape(int w, int h) {
 void timer(int value) {
     (void) value;
 
-    physicsStep();
+    glutTimerFunc(1000 / FPS, timer, 0);
+    int time = glutGet(GLUT_ELAPSED_TIME);
+
+    physicsStep(time - last_time);
 
     glutPostRedisplay();
-    glutTimerFunc(1000 / FPS, timer, 0);
+    last_time = time;
 }
 
 void special(int key, int x, int y) {
@@ -201,6 +205,7 @@ int main(int argc, char* argv[]) {
     glutSpecialFunc(special);
     glutKeyboardFunc(keyboard);
 
+    last_time = glutGet(GLUT_ELAPSED_TIME);
     glutTimerFunc(1000 / FPS, timer, 0);
 
     initPlanets();

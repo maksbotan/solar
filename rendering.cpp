@@ -156,14 +156,14 @@ void drawPlanets(bool orbits) {
         it->render(orbits);
 }
 
-void physicsStep() {
+void physicsStep(int elapsed) {
     for (auto it = planets.begin(); it != planets.end(); it++)
-        it->physicsStep(0);
+        it->physicsStep(elapsed);
 
     days += DAYS_PER_SECOND / FPS;
 
     // Sun rotation
-    sunPhase += 360 * DAYS_PER_SECOND / (FPS * SUN_SIDERIAL_PERIOD);
+    sunPhase += 360 * DAYS_PER_SECOND * elapsed / (1000 * SUN_SIDERIAL_PERIOD);
     if (sunPhase > 360)
         sunPhase -= 360;
 }

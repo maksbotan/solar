@@ -15,9 +15,17 @@ solar: $(OBJECTS)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 clean:
-	rm -rf *.o solar
+	rm -rf .depend *.o solar
 
 run: solar
 	./solar
+
+depend: .depend
+
+.depend: $(SOURCES)
+	rm -f .depend
+	$(CXX) $(CFLAGS) -MM $^ > .depend
+
+-include .depend
 
 .PHONY: clean

@@ -53,7 +53,7 @@ Planet::~Planet() {
 }
 
 void Planet::physicsStep(int elapsed) {
-    orbitPHI += DAYS_PER_SECOND * 2*M_PI / (FPS * siderial_year);
+    orbitPHI += DAYS_PER_SECOND * 2*M_PI * elapsed / (1000 * siderial_year);
     if (orbitPHI >= 2*M_PI)
         orbitPHI -= 2*M_PI; // Keep it small
 
@@ -61,7 +61,7 @@ void Planet::physicsStep(int elapsed) {
     orbitX = semimajor_axis * cos(-orbitPHI);
     orbitZ = semiminor_axis * sin(-orbitPHI);
 
-    phase += 360 * DAYS_PER_SECOND / (FPS * siderial_day);
+    phase += 360 * DAYS_PER_SECOND * elapsed / (1000 * siderial_day);
     if (phase >= 360.0f)
         phase -= 360.0f;
 

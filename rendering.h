@@ -17,6 +17,6 @@ void drawText(const char *text, GLuint x, GLuint y, GLfloat r, GLfloat g, GLfloa
 void drawStats();
 void initPlanets();
 void drawPlanets(bool orbits = false);
-void physicsStep();
+void physicsStep(int elapsed);
 
 #endif
