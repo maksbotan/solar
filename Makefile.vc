@@ -4,8 +4,9 @@ OBJECTS = $(SOURCES:.cpp=.obj)
 
 CL = cl
 LINK = link
-CXXFLAGS = /nologo /EHsc /Ifreeglut/include
-LDFLAGS = /nologo /LIBPATH:freeglut/lib
+CXXFLAGS = /nologo /EHsc /MD /Iinclude
+LDFLAGS = /nologo /LIBPATH:lib /SUBSYSTEM:windows
+LIBS = SDL2.lib SDL2main.lib SDL2_ttf.lib opengl32.lib glu32.lib
 
 all: solar
 

@@ -7,11 +7,16 @@
 #endif
 
 #include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <SDL_ttf.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <GL/glut.h>
 #include <vector>
+
+#ifndef GL_BGRA
+#include <GL/glext.h>
+#endif
 
 #include "constants.h"
 #include "planet.h"
@@ -86,7 +91,7 @@ void drawSky() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void drawText(const char *text, GLuint x, GLuint y, GLfloat r, GLfloat g, GLfloat b, GLubyte cont) {
+void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y) {
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport); // [x, y, w, h]
 
@@ -102,13 +107,26 @@ void drawText(const char *text, GLuint x, GLuint y, GLfloat r, GLfloat g, GLfloa
 
     glDisable(GL_LIGHTING);
 
-    glColor3f(r, g, b);
+    SDL_Color white = {255, 255, 255, 0};
+    SDL_Surface *text_surface = TTF_RenderText_Blended(const_cast<TTF_Font*>(font), text, white);
+    GLuint texture = 0;
 
-    if (!cont)
-        glRasterPos2i(x, viewport[3] - y); // Invert y axis to usual direction
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text_surface->w, text_surface->h, 0, GL_BGRA, GL_UNSIGNED_BYTE, text_surface->pixels);
 
-    while (*text)
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *text++);
+    glBegin(GL_QUADS);
+    glTexCoord2d(0, 1); glVertex2i(x, viewport[3] - y);
+    glTexCoord2d(1, 1); glVertex2i(x + text_surface->w, viewport[3] - y);
+    glTexCoord2d(1, 0); glVertex2i(x + text_surface->w, viewport[3] - y + text_surface->h);
+    glTexCoord2d(0, 0); glVertex2i(x, viewport[3] - y + text_surface->h);
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDeleteTextures(1, &texture);
+    SDL_FreeSurface(text_surface);
 
     // Restore original matrices
     glPopMatrix();
@@ -118,27 +136,31 @@ void drawText(const char *text, GLuint x, GLuint y, GLfloat r, GLfloat g, GLfloa
     glEnable(GL_LIGHTING);
 }
 
-const char *elapsedDaysText = "Days elapsed: ",
-           *elapsedMonthsText = "Siderial months elapsed: ";
+const char *elapsedDaysText = "Days elapsed: %.2f",
+           *elapsedMonthsText = "Siderial months elapsed: %u",
+           *fpsText = "FPS: %u";
 
-void drawStats() {
-    drawText(elapsedDaysText, 10, 20, 1.0f, 1.0f, 1.0f, 0);
-
-    int days_len = snprintf(NULL, 0, "%.2f", days) + 1;
+void drawStats(const TTF_Font *font, Uint32 frames) {
+    int days_len = snprintf(NULL, 0, elapsedDaysText, days) + 1;
     char *days_str = (char*) malloc(days_len);
-    snprintf(days_str, days_len, "%.2f", days);
-    drawText(days_str, 0, 0, 1.0f, 1.0f, 1.0f, 1);
+    snprintf(days_str, days_len, elapsedDaysText, days);
+    drawText(days_str, font, 10, 20);
     free(days_str);
-
-    drawText(elapsedMonthsText, 10, 40, 1.0f, 1.0f, 1.0f, 0);
 
     GLuint months = floorf(days / SIDERIAL_MONTH);
 
-    int months_len = snprintf(NULL, 0, "%u", months) + 1;
+    int months_len = snprintf(NULL, 0, elapsedMonthsText, months) + 1;
     char *months_str = (char*) malloc(months_len);
-    snprintf(months_str, months_len, "%u", months);
-    drawText(months_str, 0, 0, 1.0f, 1.0f, 1.0f, 1);
+    snprintf(months_str, months_len, elapsedMonthsText, months);
+    drawText(months_str, font, 10, 45);
     free(months_str);
+
+    int fps_len = snprintf(NULL, 0, fpsText, frames) + 1;
+    char *fps_str = (char*) malloc(fps_len);
+    snprintf(fps_str, months_len, fpsText, frames);
+    drawText(fps_str, font, 10, 70);
+    free(fps_str);
+
 }
 
 void initPlanets() {

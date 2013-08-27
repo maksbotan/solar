@@ -2,7 +2,9 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define FPS 60
+#define WIDTH 800
+#define HEIGHT 600
+#define FPS 100
 
 #define SUN_RADIUS 0.15f
 #define SUN_AXIS_HALFSIZE 0.25f

@@ -7,11 +7,12 @@
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <GL/glut.h>
 
 #include "constants.h"
 #include "bmp_loader.h"
 #include "planet.h"
+
+void drawTorus(double, int, int);
 
 Planet::Planet(GLfloat radius_, GLfloat semimajor_axis_, GLfloat eccentricity, GLfloat siderial_year_, GLfloat siderial_day_, GLfloat orbit_inclination_, GLfloat axis_inclination_, const char *texture_file, GLfloat phi) :
     radius(radius_),
@@ -80,7 +81,7 @@ void Planet::render(bool orbit) {
         glPushMatrix();
         glRotatef(90.f, 1.0f, 0.0f, 0.0f);
         glScalef(1.0f, semiminor_axis / semimajor_axis, 1.0f);
-        glutSolidTorus(0.0007f, semimajor_axis, 5, 100);
+        drawTorus(semimajor_axis, 5, 100);
         glPopMatrix();
     }
 
@@ -111,4 +112,27 @@ void Planet::render(bool orbit) {
 
 void Planet::addMoon(Planet &&moon) {
     moons.push_back(std::move(moon));
+}
+
+// Taken from google, claimed to be from Red Book
+void drawTorus(double r, int numc, int numt) {
+    int i, j, k;
+    double s, t, x, y, z, twopi;
+
+    twopi = 2 * (double) M_PI;
+    for (i = 0; i < numc; i++) {
+        glBegin(GL_QUAD_STRIP);
+        for (j = 0; j <= numt; j++) {
+            for (k = 1; k >= 0; k--) {
+                s = (i + k) % numc + 0.5;
+                t = j % numt;
+
+                x = (r + .001*cos(s*twopi/numc))*cos(t*twopi/numt);
+                y = (r + .001*cos(s*twopi/numc))*sin(t*twopi/numt);
+                z = .001 * sin(s * twopi / numc);
+                glVertex3f(x, y, z);
+            }
+        }
+    glEnd();
+    }
 }

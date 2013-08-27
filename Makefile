@@ -4,15 +4,17 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 CXX ?= clang++
 CXXFLAGS ?= -Wall -Wextra -g -ggdb
-LIBS = -lGL -lGLU -lglut
+SDL_INCLUDES = $(shell sdl2-config --cflags)
+LIBS = -lGL -lGLU -lSDL2 -lSDL2_ttf
+SDL_LIBS = $(shell sdl2-config --libs)
 
 all: solar
 
 .cpp.o:
-	$(CXX) $(CXXFLAGS) -std=c++11 -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(SDL_INCLUDES) -std=c++11 -c $< -o $@
 
 solar: $(OBJECTS)
-	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LIBS) $(SDL_LIBS) -o $@
 
 clean:
 	rm -rf .depend *.o solar
@@ -24,7 +26,7 @@ depend: .depend
 
 .depend: $(SOURCES)
 	rm -f .depend
-	$(CXX) $(CFLAGS) -MM $^ > .depend
+	$(CXX) $(CXXFLAGS) $(SDL_INCLUDES) -MM $^ > .depend
 
 -include .depend
 
