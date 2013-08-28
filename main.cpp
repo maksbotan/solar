@@ -159,6 +159,7 @@ int main(int, char **) {
     window = SDL_CreateWindow("Solar system", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext glcontext = SDL_GL_CreateContext(window);
     SDL_GL_SetSwapInterval(1); // Enable VSYNC
+    reshape(WIDTH, HEIGHT); // SDL does not send resize event on startup
 
     font = TTF_OpenFont("Vera.ttf", 16);
 
