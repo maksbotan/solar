@@ -13,6 +13,8 @@ Right now the model has following features:
 * Planets' orbit planes (ecliptic) are inclined to the Sun's equator plane at the correct angle
 * Planets' axial tilts are correct
 * Moon orbit plane is inclined to ecliptic at the correct angle
+* Ascending nodes of orbits are placed correctly
+* Arguments of perihelion of orbits are respected
 * Time goes in real scale: 1 day per 1 second by default, configurable in sources
 * All stellar bodies orbital and siderial periods of revolutions are correct
 * Planets sizes and orbit radiuses ratios are correct
