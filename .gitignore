@@ -3,3 +3,4 @@
 solar
 *.exe
 .depend
+.clang_complete

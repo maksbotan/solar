@@ -14,13 +14,25 @@
 
 void drawTorus(double, int, int);
 
-Planet::Planet(GLfloat radius_, GLfloat semimajor_axis_, GLfloat eccentricity, GLfloat siderial_year_, GLfloat siderial_day_, GLfloat orbit_inclination_, GLfloat axis_inclination_, const char *texture_file, GLfloat phi) :
+Planet::Planet(GLfloat radius_,
+               GLfloat semimajor_axis_,
+               GLfloat eccentricity,
+               GLfloat siderial_year_,
+               GLfloat siderial_day_,
+               GLfloat orbit_inclination_,
+               GLfloat axis_inclination_,
+               GLfloat asc_node_,
+               GLfloat arg_periapsis_,
+               const char *texture_file,
+               GLfloat phi) :
     radius(radius_),
     semimajor_axis(semimajor_axis_),
     siderial_year(siderial_year_),
     siderial_day(siderial_day_),
     orbit_inclination(orbit_inclination_),
     axis_inclination(axis_inclination_),
+    asc_node(asc_node_),
+    arg_periapsis(arg_periapsis_),
     orbitX(0.0f),
     orbitZ(0.0f),
     orbitPHI(phi),
@@ -38,6 +50,8 @@ Planet::Planet(Planet &&rvalue) :
     siderial_day(rvalue.siderial_day),
     orbit_inclination(rvalue.orbit_inclination),
     axis_inclination(rvalue.axis_inclination),
+    asc_node(rvalue.asc_node),
+    arg_periapsis(rvalue.arg_periapsis),
     orbitX(rvalue.orbitX),
     orbitZ(rvalue.orbitZ),
     orbitPHI(rvalue.orbitPHI),
@@ -70,12 +84,16 @@ void Planet::physicsStep(int elapsed) {
         it->physicsStep(elapsed);
 }
 
-void Planet::render(bool orbit) {
+void Planet::render(bool orbit, bool is_moon) {
     glPushMatrix();
 
     glColor3f(1.0f, 1.0f, 1.0f);
 
-    glRotatef(orbit_inclination, 0.0f, 0.0f, 1.0f);
+    if (!is_moon) // When rendering moons we are already in planet's orbital plane
+        glRotatef(ECLIPTIC_INCLINATION, 0.0f, 0.0f, 1.0f); // Enter ecliptic plane - common plane of reference
+    glRotatef(asc_node, 0.0f, 1.0f, 0.0f); // Place orbital nodes
+    glRotatef(orbit_inclination, 0.0f, 0.0f, 1.0f); // Now handle inclination
+    glRotatef(arg_periapsis, 0.0f, 1.0f, 0.0f); // And finally argument of periapsis
 
     if (orbit) {
         glPushMatrix();
@@ -85,10 +103,19 @@ void Planet::render(bool orbit) {
         glPopMatrix();
     }
 
+    /*
+    glBegin(GL_LINES);
+    glVertex3f(-semimajor_axis, 0.0f, 0.0f);
+    glVertex3f(semimajor_axis, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, -semiminor_axis);
+    glVertex3f(0.0f, 0.0f, semiminor_axis);
+    glEnd();
+    */
+
     glTranslatef(orbitX, 0.0f, orbitZ);
 
     for (auto it = moons.begin(); it != moons.end(); it++)
-        it->render(orbit);
+        it->render(orbit, true);
 
     glRotatef(axis_inclination, 1.0f, 0.0f, 0.0f); // Axis is inclined wrt orbit
     glRotatef(phase, 0.0f, 1.0f, 0.0f); // Finally handle everyday rotation

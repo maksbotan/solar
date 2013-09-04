@@ -15,15 +15,26 @@ protected:
     GLfloat radius, semimajor_axis, semiminor_axis;
     GLfloat siderial_year, siderial_day;
     GLfloat orbit_inclination, axis_inclination;
+    GLfloat asc_node, arg_periapsis;
     GLfloat orbitX, orbitZ, orbitPHI, phase; // phi in radians, phase in degrees
     GLuint texture;
     std::vector<Planet> moons;
 public:
-    Planet(GLfloat radius_, GLfloat semimajor_axis_, GLfloat eccentricity, GLfloat siderial_year_, GLfloat siderial_day_, GLfloat orbit_inclination_, GLfloat axis_inclination_, const char *texture_file, GLfloat phi = 0.0f);
+    Planet(GLfloat radius_,
+           GLfloat semimajor_axis_,
+           GLfloat eccentricity,
+           GLfloat siderial_year_,
+           GLfloat siderial_day_,
+           GLfloat orbit_inclination_,
+           GLfloat axis_inclination_,
+           GLfloat asc_node_,
+           GLfloat arg_periapsis_,
+           const char *texture_file,
+           GLfloat phi = 0.0f);
     Planet(Planet &&rvalue);
     ~Planet();
     void physicsStep(int elapsed);
-    void render(bool orbit = false);
+    void render(bool orbit = false, bool is_moon = false);
     void addMoon(Planet &&moon); // Use rvalue reference to always steal caller's object - avoids copying OpenGL textures
 };
 
