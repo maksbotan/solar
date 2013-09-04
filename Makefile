@@ -4,9 +4,9 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 CXX ?= clang++
 CXXFLAGS ?= -Wall -Wextra -g -ggdb
-SDL_INCLUDES = $(shell sdl2-config --cflags)
-LIBS = -lGL -lGLU -lSDL2 -lSDL2_ttf
-SDL_LIBS = $(shell sdl2-config --libs)
+SDL_INCLUDES = $(shell sdl2-config --cflags) $(shell pkg-config SDL2_ttf --cflags)
+LIBS = -lGL -lGLU
+SDL_LIBS = $(shell sdl2-config --libs) $(shell pkg-config SDL2_ttf --libs)
 
 all: solar
 
