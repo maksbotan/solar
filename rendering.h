@@ -4,8 +4,12 @@
 
 #include <GL/gl.h>
 
+#include "planet.h"
+
 extern GLuint starsTexture;
 extern GLuint sunTexture;
+
+extern std::vector<Planet> planets;
 
 void drawAxes();
 void drawEcliptic();

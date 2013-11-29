@@ -21,13 +21,44 @@
 
 static GLfloat xpos = 0.0f, ypos = 1.0f, zpos = 2.5f;
 static GLfloat sight_x = 0.0f, sight_y = -0.43f, sight_z = -0.9f;
-static GLfloat up_x = 0.0f, up_y = 1.0f;
-static GLfloat cam_xz_angle = 0.0f, cam_y_angle = -0.45f;
-static GLfloat cam_z_angle = M_PI_2;
+static GLfloat up_x = 0.0f, up_y = 1.0f, up_z = 0.0f;
 static bool orbits = false, running = true;
 static Uint32 last_time = 0, frames = 0;
 static SDL_Window *window = NULL;
 static TTF_Font *font = NULL;
+
+void cross_product(const GLfloat a_x, const GLfloat a_y, const GLfloat a_z,
+                   const GLfloat b_x, const GLfloat b_y, const GLfloat b_z,
+                   GLfloat &c_x, GLfloat &c_y, GLfloat &c_z) {
+    c_x = a_y * b_z - a_z * b_y;
+    c_y = a_z * b_x - a_x * b_z;
+    c_z = a_x * b_y - a_y * b_x;
+}
+
+void normalize_vector(GLfloat &x, GLfloat &y, GLfloat &z) {
+    GLfloat norm = sqrt(x*x + y*y + z*z);
+    x /= norm; y /= norm; z /= norm;
+}
+
+/*
+ * This function takes the vector (dx, dy, dz) in camera basis (sight, up, side) and
+ * transforms it into world coordinates. Result is stored in (x, y, z).
+ */
+void translate_in_camera_basis(const GLfloat dx, const GLfloat dy, const GLfloat dz, GLfloat &x, GLfloat &y, GLfloat &z) {
+    GLfloat side_x, side_y, side_z;
+    cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+    normalize_vector(side_x, side_y, side_z);
+    GLfloat temp_x, temp_y, temp_z;
+
+    // Now simple transition matrix multiplication
+    temp_x = sight_x * dx + up_x * dy + side_x * dz;
+    temp_y = sight_y * dx + up_y * dy + side_y * dz;
+    temp_z = sight_z * dx + up_z * dy + side_z * dz;
+
+    normalize_vector(temp_x, temp_y, temp_z);
+
+    x = temp_x; y = temp_y; z = temp_z;
+}
 
 void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -35,7 +66,7 @@ void renderScene(void) {
 
     gluLookAt(xpos,           ypos,           zpos,
               xpos + sight_x, ypos + sight_y, zpos + sight_z,
-              up_x,           up_y,           0.0f);
+              up_x,           up_y,           up_z);
 
     GLfloat sun_p[] = {0.0f, 0.0f, 0.0f, 1.0f};
     glLightfv(GL_LIGHT0, GL_POSITION, sun_p);
@@ -68,6 +99,8 @@ void reshape(int w, int h) {
 void keyboard(SDL_Scancode key) {
     Uint32 flags;
 
+    GLfloat side_x, side_y, side_z;
+
     switch (key) {
         case SDL_SCANCODE_Q:
             running = false;
@@ -83,27 +116,36 @@ void keyboard(SDL_Scancode key) {
             zpos -= sight_z * 0.08f;
             break;
         case SDL_SCANCODE_A:
-            xpos -= -sight_z * 0.08f;
-            zpos -= sight_x * 0.08f;
+            cross_product(up_x, up_y, up_z, sight_x, sight_y, sight_z, side_x, side_y, side_z);
+            normalize_vector(side_x, side_y, side_z);
+            xpos += side_x * 0.08f;
+            ypos += side_y * 0.08f;
+            zpos += side_z * 0.08f;
             break;
         case SDL_SCANCODE_D:
-            xpos += -sight_z * 0.08f;
-            zpos += sight_x * 0.08f;
+            cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+            normalize_vector(side_x, side_y, side_z);
+            xpos += side_x * 0.08f;
+            ypos += side_y * 0.08f;
+            zpos += side_z * 0.08f;
             break;
         case SDL_SCANCODE_Z:
-            ypos += -sight_z * 0.08f;
-            zpos += sight_y * 0.08f;
+            xpos += up_x * 0.08f;
+            ypos += up_y * 0.08f;
+            zpos += up_z * 0.08f;
             break;
         case SDL_SCANCODE_X:
-            ypos -= -sight_z * 0.08f;
-            zpos -= sight_y * 0.08f;
+            xpos -= up_x * 0.08f;
+            ypos -= up_y * 0.08f;
+            zpos -= up_z * 0.08f;
             break;
         case SDL_SCANCODE_R:
             xpos = 0.0f, ypos = 1.0f, zpos = 2.5f;
             sight_x = 0.0f, sight_y = -0.43f, sight_z = -0.9f;
             up_x = 0.0f, up_y = 1.0f;
-            cam_xz_angle = 0.0f, cam_y_angle = -0.45f;
-            cam_z_angle = M_PI_2;
+            cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+            cross_product(side_x, side_y, side_z, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+            normalize_vector(up_x, up_y, up_z);
             break;
         case SDL_SCANCODE_F:
             flags = SDL_GetWindowFlags(window);
@@ -112,41 +154,38 @@ void keyboard(SDL_Scancode key) {
         case SDL_SCANCODE_O:
             orbits = !orbits;
             break;
+        // First two rotations are easy, because the do not change the up vector
         case SDL_SCANCODE_LEFT:
-            cam_xz_angle -= 0.02f;
-            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
-            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
+            translate_in_camera_basis(cosf(-0.02f), 0.0f, sinf(-0.02f), sight_x, sight_y, sight_z);
             break;
         case SDL_SCANCODE_RIGHT:
-            cam_xz_angle += 0.02f;
-            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
-            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
+            translate_in_camera_basis(cosf(0.02f), 0.0f, sinf(0.02f), sight_x, sight_y, sight_z);
             break;
+        // In the second two rotations we need to recalculate up vector as [side x sight]
         case SDL_SCANCODE_UP:
-            if (cam_y_angle > M_PI / 3) // Do not look up to avoid gimbal locks and other problems
-                break;
-            cam_y_angle += 0.02;
-            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
-            sight_y = sinf(cam_y_angle);
-            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
+            cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+            translate_in_camera_basis(cosf(0.02f), sinf(0.02f), 0.0f, sight_x, sight_y, sight_z);
+            cross_product(side_x, side_y, side_z, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+            normalize_vector(sight_x, sight_y, sight_z);
             break;
         case SDL_SCANCODE_DOWN:
-            if (cam_y_angle < -M_PI / 3) // And do not look down
-                break;
-            cam_y_angle -= 0.02f;
-            sight_x = cosf(cam_y_angle) * sinf(cam_xz_angle);
-            sight_y = sinf(cam_y_angle);
-            sight_z = -cosf(cam_y_angle) * cosf(cam_xz_angle);
+            cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+            translate_in_camera_basis(cosf(-0.02f), sinf(-0.02f), 0.0f, sight_x, sight_y, sight_z);
+            cross_product(side_x, side_y, side_z, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+            normalize_vector(sight_x, sight_y, sight_z);
             break;
+        // Last two do not change the sight vector
         case SDL_SCANCODE_PAGEUP:
-            cam_z_angle += 0.02f;
-            up_x = cosf(cam_z_angle);
-            up_y = sinf(cam_z_angle);
+            translate_in_camera_basis(0.0f, cosf(-0.02f), sinf(-0.02f), up_x, up_y, up_z);
             break;
         case SDL_SCANCODE_PAGEDOWN:
-            cam_z_angle -= 0.02f;
-            up_x = cosf(cam_z_angle);
-            up_y = sinf(cam_z_angle);
+            translate_in_camera_basis(0.0f, cosf(0.02f), sinf(0.02f), up_x, up_y, up_z);
+            break;
+        case SDL_SCANCODE_T:
+            planets[0].generateLookAt(xpos, ypos, zpos, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+            cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+            cross_product(side_x, side_y, side_z, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+            normalize_vector(up_x, up_y, up_z);
             break;
         default:
             break;
@@ -184,6 +223,11 @@ int main(int, char **) {
 
     last_time = SDL_GetTicks();
     Uint32 dt = 1000 / FPS, delta = 0;
+
+    GLfloat side_x, side_y, side_z;
+    cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+    cross_product(side_x, side_y, side_z, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+    normalize_vector(up_x, up_y, up_z);
 
     while (running) {
         SDL_Event event;

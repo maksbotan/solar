@@ -20,13 +20,13 @@
 
 #include "constants.h"
 #include "planet.h"
+#include "rendering.h"
 
 static GLfloat sunPhase = 0.0f;
 static GLfloat days = 0.0f;
 
-static std::vector<Planet> planets;
-
 GLuint starsTexture = 0, sunTexture = 0;
+std::vector<Planet> planets;
 
 void drawAxes() {
     glLineWidth(3.0f);

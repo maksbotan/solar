@@ -141,6 +141,49 @@ void Planet::addMoon(Planet &&moon) {
     moons.push_back(std::move(moon));
 }
 
+void Planet::generateLookAt(GLfloat &xpos, GLfloat &ypos, GLfloat &zpos, GLfloat &sight_x, GLfloat &sight_y, GLfloat &sight_z, GLfloat &up_x, GLfloat &up_y, GLfloat &up_z) {
+    glPushMatrix();
+
+    glLoadIdentity(); // Reset all current transformations
+
+    // First of all, enter correct coordinate system for planet
+    glRotatef(ECLIPTIC_INCLINATION, 0.0f, 0.0f, 1.0f);
+    glRotatef(asc_node, 0.0f, 1.0f, 0.0f);
+    glRotatef(orbit_inclination, 0.0f, 0.0f, 1.0f);
+    glRotatef(arg_periapsis, 0.0f, 1.0f, 0.0f);
+
+    // Get OpenGL's model-view matrix
+    GLfloat mat[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+
+    glPopMatrix();
+
+    GLfloat norm = sqrt(orbitX * orbitX + orbitZ * orbitZ);
+    GLfloat model_x = orbitX * (1 + 8*radius/norm), model_y = 0.08f, model_z = orbitZ * (1 + 8*radius/norm);
+
+    // And multiply it to (orbitX, 0, orbitZ) in order to get world coordinates for the center of the planet
+    GLfloat x = mat[0]*model_x + mat[4]*model_y + mat[8]*model_z;
+    GLfloat y = mat[1]*model_x + mat[5]*model_y + mat[9]*model_z;
+    GLfloat z = mat[2]*model_x + mat[6]*model_y + mat[10]*model_z;
+
+    // Calculate up vector the same way and normalize it
+    GLfloat norm_up = sqrt(mat[4]*mat[4] + mat[5]*mat[5] + mat[6]*mat[6]);
+    up_x = mat[4] / norm_up;
+    up_y = mat[5] / norm_up;
+    up_z = mat[6] / norm_up;
+
+    xpos = x;
+    ypos = y;
+    zpos = z;
+
+    // Normalize the sight vector too
+    GLfloat norm_sight = sqrt(x*x + y*y + z*z);
+
+    sight_x = -x / norm_sight;
+    sight_y = -y / norm_sight;
+    sight_z = -z / norm_sight;
+}
+
 // Taken from google, claimed to be from Red Book
 void drawTorus(double r, int numc, int numt) {
     int i, j, k;
