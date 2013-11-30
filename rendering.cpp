@@ -85,7 +85,7 @@ void drawSky() {
     gluQuadricTexture(stars, GLU_TRUE);
     gluQuadricNormals(stars, GLU_SMOOTH);
     gluQuadricOrientation(stars, GLU_INSIDE);
-    gluSphere(stars, 5.0f, 50, 50);
+    gluSphere(stars, ASTRONOMIC_UNIT * 10.0f, 50, 50);
 
     gluDeleteQuadric(stars);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -164,13 +164,15 @@ void drawStats(const TTF_Font *font, Uint32 frames) {
 }
 
 void initPlanets() {
-    planets.push_back(Planet(EARTH_RADIUS, 1.0f, 0.016f, SIDERIAL_YEAR, 1.0f, 0.0f, EARTH_AXIS_INCLINATION, 0.0f, 0.0f, "textures/earth.bmp", -M_PI));
+    planets.push_back(Planet(EARTH_RADIUS, ASTRONOMIC_UNIT, 0.016f, SIDERIAL_YEAR, 1.0f, 0.0f, EARTH_AXIS_INCLINATION, 0.0f, 0.0f, "textures/earth.bmp", -M_PI));
     planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, 0.05f, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 6.68f, 0.0f, 0.0f, "textures/moon.bmp", 0.0f));
 
-    //                       Radius               A      Ecc    Year    Day      Incl   Tilt    Node    Perih.  Texture                 Phase
-    planets.push_back(Planet(EARTH_RADIUS * 0.38, 0.39f, 0.2f,  87.9f,  58.6f,   7.0f,  0.03f,  48.33f, 29.12f, "textures/mercury.bmp", -M_PI)); // Mercury
-    planets.push_back(Planet(EARTH_RADIUS * 0.93, 0.7f,  0.006f,224.7f, -243.0f, 3.39f, 177.3f, 76.67f, 55.18f, "textures/venus.bmp",   -M_PI)); // Venus
-    planets.push_back(Planet(EARTH_RADIUS * 0.53, 1.52f, 0.09f, 686.9f, 1.02f,   1.85f, 25.19f, 49.5f,  286.5,  "textures/mars.bmp",    -M_PI)); // Mars
+    //                       Radius               A                        Ecc    Year    Day      Incl   Tilt    Node    Perih.  Texture                 Phase
+    planets.push_back(Planet(EARTH_RADIUS * 0.38, ASTRONOMIC_UNIT * 0.39f, 0.2f,  87.9f,  58.6f,   7.0f,  0.03f,  48.33f, 29.12f, "textures/mercury.bmp", -M_PI)); // Mercury
+    planets.push_back(Planet(EARTH_RADIUS * 0.93, ASTRONOMIC_UNIT * 0.7f,  0.006f,224.7f, -243.0f, 3.39f, 177.3f, 76.67f, 55.18f, "textures/venus.bmp",   -M_PI)); // Venus
+    planets.push_back(Planet(EARTH_RADIUS * 0.53, ASTRONOMIC_UNIT * 1.52f, 0.09f, 686.9f, 1.02f,   1.85f, 25.19f, 49.5f,  286.5,  "textures/mars.bmp",    -M_PI)); // Mars
+    planets.push_back(Planet(EARTH_RADIUS * 11.0f,ASTRONOMIC_UNIT * 5.2f,  0.04f, 4332.5f,0.41f,   1.3f,  3.13f,  100.4f, 275.0f, "textures/jupiter.bmp", -M_PI)); // Jupiter
+    planets.back().addMoon(Planet(EARTH_RADIUS * 0.28f, ASTRONOMIC_UNIT * 0.002f, 0.004f, 1.8f, 1.8f, 0.05f, 0.0f, 0.0f, 0.0f, "textures/io.bmp", 0.0f)); // Io
 }
 
 void drawPlanets(bool orbits) {

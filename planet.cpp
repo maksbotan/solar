@@ -99,7 +99,7 @@ void Planet::render(bool orbit, bool is_moon) {
         glPushMatrix();
         glRotatef(90.f, 1.0f, 0.0f, 0.0f);
         glScalef(1.0f, semiminor_axis / semimajor_axis, 1.0f);
-        drawTorus(semimajor_axis, 5, 100);
+        drawTorus(semimajor_axis, 5, 300);
         glPopMatrix();
     }
 
@@ -159,7 +159,7 @@ void Planet::generateLookAt(GLfloat &xpos, GLfloat &ypos, GLfloat &zpos, GLfloat
     glPopMatrix();
 
     GLfloat norm = sqrt(orbitX * orbitX + orbitZ * orbitZ);
-    GLfloat model_x = orbitX * (1 + 8*radius/norm), model_y = 0.08f, model_z = orbitZ * (1 + 8*radius/norm);
+    GLfloat model_x = orbitX * (1 + 8*radius/norm), model_y = radius, model_z = orbitZ * (1 + 8*radius/norm);
 
     // And multiply it to (orbitX, 0, orbitZ) in order to get world coordinates for the center of the planet
     GLfloat x = mat[0]*model_x + mat[4]*model_y + mat[8]*model_z;
@@ -197,9 +197,9 @@ void drawTorus(double r, int numc, int numt) {
                 s = (i + k) % numc + 0.5;
                 t = j % numt;
 
-                x = (r + .001*cos(s*twopi/numc))*cos(t*twopi/numt);
-                y = (r + .001*cos(s*twopi/numc))*sin(t*twopi/numt);
-                z = .001 * sin(s * twopi / numc);
+                x = (r + .0001*cos(s*twopi/numc))*cos(t*twopi/numt);
+                y = (r + .0001*cos(s*twopi/numc))*sin(t*twopi/numt);
+                z = .0001 * sin(s * twopi / numc);
                 glVertex3f(x, y, z);
             }
         }

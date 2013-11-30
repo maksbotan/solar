@@ -19,7 +19,7 @@
 #include "bmp_loader.h"
 #include "planet.h"
 
-static GLfloat xpos = 0.0f, ypos = 1.0f, zpos = 2.5f;
+static GLfloat xpos = 0.0f, ypos = ASTRONOMIC_UNIT * 1.0f, zpos = ASTRONOMIC_UNIT * 2.5f;
 static GLfloat sight_x = 0.0f, sight_y = -0.43f, sight_z = -0.9f;
 static GLfloat up_x = 0.0f, up_y = 1.0f, up_z = 0.0f;
 static bool orbits = false, running = true;
@@ -91,7 +91,7 @@ void reshape(int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    gluPerspective(45.0f, (float) w/h, 0.1f, 50.0f);
+    gluPerspective(45.0f, (float) w/h,  0.1f / ASTRONOMIC_UNIT, ASTRONOMIC_UNIT * 50.0f);
 
     glMatrixMode(GL_MODELVIEW);
 }
@@ -106,41 +106,41 @@ void keyboard(SDL_Scancode key) {
             running = false;
             break;
         case SDL_SCANCODE_W:
-            xpos += sight_x * 0.08f;
-            ypos += sight_y * 0.08f;
-            zpos += sight_z * 0.08f;
+            xpos += sight_x * 0.008f;
+            ypos += sight_y * 0.008f;
+            zpos += sight_z * 0.008f;
             break;
         case SDL_SCANCODE_S:
-            xpos -= sight_x * 0.08f;
-            ypos -= sight_y * 0.08f;
-            zpos -= sight_z * 0.08f;
+            xpos -= sight_x * 0.008f;
+            ypos -= sight_y * 0.008f;
+            zpos -= sight_z * 0.008f;
             break;
         case SDL_SCANCODE_A:
             cross_product(up_x, up_y, up_z, sight_x, sight_y, sight_z, side_x, side_y, side_z);
             normalize_vector(side_x, side_y, side_z);
-            xpos += side_x * 0.08f;
-            ypos += side_y * 0.08f;
-            zpos += side_z * 0.08f;
+            xpos += side_x * 0.008f;
+            ypos += side_y * 0.008f;
+            zpos += side_z * 0.008f;
             break;
         case SDL_SCANCODE_D:
             cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
             normalize_vector(side_x, side_y, side_z);
-            xpos += side_x * 0.08f;
-            ypos += side_y * 0.08f;
-            zpos += side_z * 0.08f;
+            xpos += side_x * 0.008f;
+            ypos += side_y * 0.008f;
+            zpos += side_z * 0.008f;
             break;
         case SDL_SCANCODE_Z:
-            xpos += up_x * 0.08f;
-            ypos += up_y * 0.08f;
-            zpos += up_z * 0.08f;
+            xpos += up_x * 0.008f;
+            ypos += up_y * 0.008f;
+            zpos += up_z * 0.008f;
             break;
         case SDL_SCANCODE_X:
-            xpos -= up_x * 0.08f;
-            ypos -= up_y * 0.08f;
-            zpos -= up_z * 0.08f;
+            xpos -= up_x * 0.008f;
+            ypos -= up_y * 0.008f;
+            zpos -= up_z * 0.008f;
             break;
         case SDL_SCANCODE_R:
-            xpos = 0.0f, ypos = 1.0f, zpos = 2.5f;
+            xpos = 0.0f, ypos = ASTRONOMIC_UNIT * 1.0f, zpos = ASTRONOMIC_UNIT * 2.5f;
             sight_x = 0.0f, sight_y = -0.43f, sight_z = -0.9f;
             up_x = 0.0f, up_y = 1.0f;
             cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);

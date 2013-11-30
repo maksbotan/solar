@@ -17,9 +17,7 @@ Right now the model has following features:
 * Arguments of perihelion of orbits are respected
 * Time goes in real scale: 1 day per 1 second by default, configurable in sources
 * All stellar bodies orbital and siderial periods of revolutions are correct
-* Planets sizes and orbit radiuses ratios are correct
-
-*Note*: Earth, Moon and Sun radiuses themselves are arbitrary
+* All size ratios are correct
 
 Controls
 ========
