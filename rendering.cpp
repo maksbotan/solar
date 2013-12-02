@@ -91,9 +91,10 @@ void drawSky() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y) {
+void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y, bool opengl_coordinates, bool center_coordinates) {
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport); // [x, y, w, h]
+    y = opengl_coordinates ? y : (viewport[3] - y);
 
     // Temporaly set 2D projection and disable lights
     glMatrixMode(GL_PROJECTION);
@@ -111,6 +112,11 @@ void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y) {
     SDL_Surface *text_surface = TTF_RenderText_Blended(const_cast<TTF_Font*>(font), text, white);
     GLuint texture = 0;
 
+    if (center_coordinates) {
+        x -= text_surface->w / 2;
+        y -= text_surface->h / 2;
+    }
+
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -118,10 +124,10 @@ void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, text_surface->w, text_surface->h, 0, GL_BGRA, GL_UNSIGNED_BYTE, text_surface->pixels);
 
     glBegin(GL_QUADS);
-    glTexCoord2d(0, 1); glVertex2i(x, viewport[3] - y);
-    glTexCoord2d(1, 1); glVertex2i(x + text_surface->w, viewport[3] - y);
-    glTexCoord2d(1, 0); glVertex2i(x + text_surface->w, viewport[3] - y + text_surface->h);
-    glTexCoord2d(0, 0); glVertex2i(x, viewport[3] - y + text_surface->h);
+    glTexCoord2d(0, 1); glVertex2i(x, y);
+    glTexCoord2d(1, 1); glVertex2i(x + text_surface->w, y);
+    glTexCoord2d(1, 0); glVertex2i(x + text_surface->w, y + text_surface->h);
+    glTexCoord2d(0, 0); glVertex2i(x, y + text_surface->h);
     glEnd();
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -161,18 +167,20 @@ void drawStats(const TTF_Font *font, Uint32 frames) {
     drawText(fps_str, font, 10, 70);
     free(fps_str);
 
+    for (auto it = planets.begin(); it != planets.end(); it++)
+        it->showTitle(font);
 }
 
 void initPlanets() {
-    planets.push_back(Planet(EARTH_RADIUS, ASTRONOMIC_UNIT, 0.016f, SIDERIAL_YEAR, 1.0f, 0.0f, EARTH_AXIS_INCLINATION, 0.0f, 0.0f, "textures/earth.bmp", -M_PI));
-    planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, 0.05f, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 6.68f, 0.0f, 0.0f, "textures/moon.bmp", 0.0f));
+    planets.push_back(Planet(EARTH_RADIUS, ASTRONOMIC_UNIT, 0.016f, SIDERIAL_YEAR, 1.0f, 0.0f, EARTH_AXIS_INCLINATION, 0.0f, 0.0f, "textures/earth.bmp", -M_PI, "Earth"));
+    planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, 0.05f, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 6.68f, 0.0f, 0.0f, "textures/moon.bmp", 0.0f, "Moon"));
 
-    //                       Radius               A                        Ecc    Year    Day      Incl   Tilt    Node    Perih.  Texture                 Phase
-    planets.push_back(Planet(EARTH_RADIUS * 0.38, ASTRONOMIC_UNIT * 0.39f, 0.2f,  87.9f,  58.6f,   7.0f,  0.03f,  48.33f, 29.12f, "textures/mercury.bmp", -M_PI)); // Mercury
-    planets.push_back(Planet(EARTH_RADIUS * 0.93, ASTRONOMIC_UNIT * 0.7f,  0.006f,224.7f, -243.0f, 3.39f, 177.3f, 76.67f, 55.18f, "textures/venus.bmp",   -M_PI)); // Venus
-    planets.push_back(Planet(EARTH_RADIUS * 0.53, ASTRONOMIC_UNIT * 1.52f, 0.09f, 686.9f, 1.02f,   1.85f, 25.19f, 49.5f,  286.5,  "textures/mars.bmp",    -M_PI)); // Mars
-    planets.push_back(Planet(EARTH_RADIUS * 11.0f,ASTRONOMIC_UNIT * 5.2f,  0.04f, 4332.5f,0.41f,   1.3f,  3.13f,  100.4f, 275.0f, "textures/jupiter.bmp", -M_PI)); // Jupiter
-    planets.back().addMoon(Planet(EARTH_RADIUS * 0.28f, ASTRONOMIC_UNIT * 0.002f, 0.004f, 1.8f, 1.8f, 0.05f, 0.0f, 0.0f, 0.0f, "textures/io.bmp", 0.0f)); // Io
+    //                       Radius               A                        Ecc    Year    Day      Incl   Tilt    Node    Perih.  Texture                 Phase  Name
+    planets.push_back(Planet(EARTH_RADIUS * 0.38, ASTRONOMIC_UNIT * 0.39f, 0.2f,  87.9f,  58.6f,   7.0f,  0.03f,  48.33f, 29.12f, "textures/mercury.bmp", -M_PI, "Mercury"));
+    planets.push_back(Planet(EARTH_RADIUS * 0.93, ASTRONOMIC_UNIT * 0.7f,  0.006f,224.7f, -243.0f, 3.39f, 177.3f, 76.67f, 55.18f, "textures/venus.bmp",   -M_PI, "Venus"));
+    planets.push_back(Planet(EARTH_RADIUS * 0.53, ASTRONOMIC_UNIT * 1.52f, 0.09f, 686.9f, 1.02f,   1.85f, 25.19f, 49.5f,  286.5,  "textures/mars.bmp",    -M_PI, "Mars"));
+    planets.push_back(Planet(EARTH_RADIUS * 11.0f,ASTRONOMIC_UNIT * 5.2f,  0.04f, 4332.5f,0.41f,   1.3f,  3.13f,  100.4f, 275.0f, "textures/jupiter.bmp", -M_PI, "Jupiter"));
+    planets.back().addMoon(Planet(EARTH_RADIUS * 0.28f, ASTRONOMIC_UNIT * 0.002f, 0.004f, 1.8f, 1.8f, 0.05f, 0.0f, 0.0f, 0.0f, "textures/io.bmp", 0.0f, "Io"));
 }
 
 void drawPlanets(bool orbits) {

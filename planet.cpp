@@ -10,6 +10,7 @@
 
 #include "constants.h"
 #include "bmp_loader.h"
+#include "rendering.h"
 #include "planet.h"
 
 void drawTorus(double, int, int);
@@ -24,7 +25,8 @@ Planet::Planet(GLfloat radius_,
                GLfloat asc_node_,
                GLfloat arg_periapsis_,
                const char *texture_file,
-               GLfloat phi) :
+               GLfloat phi,
+               const char *name_) :
     radius(radius_),
     semimajor_axis(semimajor_axis_),
     siderial_year(siderial_year_),
@@ -36,7 +38,9 @@ Planet::Planet(GLfloat radius_,
     orbitX(0.0f),
     orbitZ(0.0f),
     orbitPHI(phi),
-    phase(0.0f)
+    phase(0.0f),
+    name(name_),
+    title_is_visible(false)
 {
     semiminor_axis = semimajor_axis * sqrtf(1.0f - eccentricity*eccentricity);
     texture = loadBMPTexture(texture_file);
@@ -55,7 +59,9 @@ Planet::Planet(Planet &&rvalue) :
     orbitX(rvalue.orbitX),
     orbitZ(rvalue.orbitZ),
     orbitPHI(rvalue.orbitPHI),
-    phase(rvalue.phase)
+    phase(rvalue.phase),
+    name(rvalue.name),
+    title_is_visible(rvalue.title_is_visible)
 {
     texture = rvalue.texture;
     rvalue.texture = 0;
@@ -95,6 +101,8 @@ void Planet::render(bool orbit, bool is_moon) {
     glRotatef(orbit_inclination, 0.0f, 0.0f, 1.0f); // Now handle inclination
     glRotatef(arg_periapsis, 0.0f, 1.0f, 0.0f); // And finally argument of periapsis
 
+    calculateTitlePosition();
+
     if (orbit) {
         glPushMatrix();
         glRotatef(90.f, 1.0f, 0.0f, 0.0f);
@@ -132,7 +140,6 @@ void Planet::render(bool orbit, bool is_moon) {
 
     gluDeleteQuadric(planet);
     glBindTexture(GL_TEXTURE_2D, 0);
-
 
     glPopMatrix();
 }
@@ -182,6 +189,37 @@ void Planet::generateLookAt(GLfloat &xpos, GLfloat &ypos, GLfloat &zpos, GLfloat
     sight_x = -x / norm_sight;
     sight_y = -y / norm_sight;
     sight_z = -z / norm_sight;
+}
+
+void Planet::calculateTitlePosition() {
+    GLdouble modelview[16], projection[16];
+    GLint viewport[4];
+    GLdouble x, y, z;
+
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    gluProject(orbitX, 1.5f*radius, orbitZ, modelview, projection, viewport, &x, &y, &z);
+    titleX = x;
+    titleY = y;
+
+    // Use ModelView matrix as transformation matrix to translate title coordinates to camera-related
+    // coordinates. + modelview[14] is essential.
+    GLdouble w_z;
+    w_z = modelview[2]*orbitX + modelview[6]*1.5f*radius + modelview[10]*orbitZ + modelview[14];
+
+    if (w_z < 0) // Camera looks down the Z axis from the origin, so objects with negative Z are visible
+        title_is_visible = true;
+    else
+        title_is_visible = false;
+}
+
+void Planet::showTitle(const TTF_Font *font) {
+    if (title_is_visible)
+        drawText(name, font, titleX, titleY, true, true);
+    for (auto it = moons.begin(); it != moons.end(); it++)
+        it->showTitle(font);
 }
 
 // Taken from google, claimed to be from Red Book
