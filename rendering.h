@@ -22,6 +22,7 @@ void drawStats(const TTF_Font *font, Uint32 frames);
 void initPlanets();
 void drawPlanets(bool orbits = false);
 void physicsStep(int elapsed);
+void freeTextures();
 
 void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y, bool opengl_coordinates = false, bool center_coordinates = false);
 

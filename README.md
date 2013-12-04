@@ -24,11 +24,13 @@ Controls
 
 * w, a, s, d, z, x - camera movement along three axes
 * left, right, up, down arrows, PgUp and PgDown - camera rotation along three axes
-* t - move camera to the Earth
+* t - toggle speed acceleration by factor of 100
 * r - return camera to initial position
 * f - toggle fullscreen mode
 * o - toggle orbits
 * q - quit program
+
+Buttons on the left edge of screen are for quick go-to function - when the a particular button is clicked, camera is moved to corresponding planet.
 
 Compilation
 ===========

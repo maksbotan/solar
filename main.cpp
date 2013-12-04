@@ -26,6 +26,7 @@ static bool orbits = false, running = true;
 static Uint32 last_time = 0, frames = 0;
 static SDL_Window *window = NULL;
 static TTF_Font *font = NULL;
+static int speed_factor = 1;
 
 void cross_product(const GLfloat a_x, const GLfloat a_y, const GLfloat a_z,
                    const GLfloat b_x, const GLfloat b_y, const GLfloat b_z,
@@ -106,38 +107,38 @@ void keyboard(SDL_Scancode key) {
             running = false;
             break;
         case SDL_SCANCODE_W:
-            xpos += sight_x * 0.008f;
-            ypos += sight_y * 0.008f;
-            zpos += sight_z * 0.008f;
+            xpos += sight_x * 0.008f * speed_factor;
+            ypos += sight_y * 0.008f * speed_factor;
+            zpos += sight_z * 0.008f * speed_factor;
             break;
         case SDL_SCANCODE_S:
-            xpos -= sight_x * 0.008f;
-            ypos -= sight_y * 0.008f;
-            zpos -= sight_z * 0.008f;
+            xpos -= sight_x * 0.008f * speed_factor;
+            ypos -= sight_y * 0.008f * speed_factor;
+            zpos -= sight_z * 0.008f * speed_factor;
             break;
         case SDL_SCANCODE_A:
             cross_product(up_x, up_y, up_z, sight_x, sight_y, sight_z, side_x, side_y, side_z);
             normalize_vector(side_x, side_y, side_z);
-            xpos += side_x * 0.008f;
-            ypos += side_y * 0.008f;
-            zpos += side_z * 0.008f;
+            xpos += side_x * 0.008f * speed_factor;
+            ypos += side_y * 0.008f * speed_factor;
+            zpos += side_z * 0.008f * speed_factor;
             break;
         case SDL_SCANCODE_D:
             cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
             normalize_vector(side_x, side_y, side_z);
-            xpos += side_x * 0.008f;
-            ypos += side_y * 0.008f;
-            zpos += side_z * 0.008f;
+            xpos += side_x * 0.008f * speed_factor;
+            ypos += side_y * 0.008f * speed_factor;
+            zpos += side_z * 0.008f * speed_factor;
             break;
         case SDL_SCANCODE_Z:
-            xpos += up_x * 0.008f;
-            ypos += up_y * 0.008f;
-            zpos += up_z * 0.008f;
+            xpos += up_x * 0.008f * speed_factor;
+            ypos += up_y * 0.008f * speed_factor;
+            zpos += up_z * 0.008f * speed_factor;
             break;
         case SDL_SCANCODE_X:
-            xpos -= up_x * 0.008f;
-            ypos -= up_y * 0.008f;
-            zpos -= up_z * 0.008f;
+            xpos -= up_x * 0.008f * speed_factor;
+            ypos -= up_y * 0.008f * speed_factor;
+            zpos -= up_z * 0.008f * speed_factor;
             break;
         case SDL_SCANCODE_R:
             xpos = 0.0f, ypos = ASTRONOMIC_UNIT * 1.0f, zpos = ASTRONOMIC_UNIT * 2.5f;
@@ -182,14 +183,38 @@ void keyboard(SDL_Scancode key) {
             translate_in_camera_basis(0.0f, cosf(0.02f), sinf(0.02f), up_x, up_y, up_z);
             break;
         case SDL_SCANCODE_T:
-            planets[0].generateLookAt(xpos, ypos, zpos, sight_x, sight_y, sight_z, up_x, up_y, up_z);
-            cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
-            cross_product(side_x, side_y, side_z, sight_x, sight_y, sight_z, up_x, up_y, up_z);
-            normalize_vector(up_x, up_y, up_z);
+            if (speed_factor == 100)
+                speed_factor = 1;
+            else
+                speed_factor = 100;
             break;
         default:
             break;
     }
+}
+
+void mouse(Sint32 x, Sint32 y) {
+    if (x < 10 || x > 60 || y < 79)
+        return;
+
+    Sint32 y1 = 79;
+    size_t i;
+
+    for (i = 0; i < planets.size(); i++) {
+        if (y > y1 && y < y1 + 50)
+            break;
+        y1 += 59;
+    }
+
+    if (i == planets.size())
+        return;
+
+    GLfloat side_x, side_y, side_z;
+
+    planets[i].generateLookAt(xpos, ypos, zpos, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+    cross_product(sight_x, sight_y, sight_z, up_x, up_y, up_z, side_x, side_y, side_z);
+    cross_product(side_x, side_y, side_z, sight_x, sight_y, sight_z, up_x, up_y, up_z);
+    normalize_vector(up_x, up_y, up_z);
 }
 
 int main(int, char **) {
@@ -243,6 +268,10 @@ int main(int, char **) {
                 case SDL_KEYDOWN:
                     keyboard(event.key.keysym.scancode);
                     break;
+                case SDL_MOUSEBUTTONUP:
+                    if (event.button.button == SDL_BUTTON_LEFT)
+                        mouse(event.button.x, event.button.y);
+                    break;
             }
 
         renderScene();
@@ -258,6 +287,7 @@ int main(int, char **) {
 
     glDeleteTextures(1, &starsTexture);
     glDeleteTextures(1, &sunTexture);
+    freeTextures();
 
     SDL_GL_DeleteContext(glcontext);
     SDL_DestroyWindow(window);

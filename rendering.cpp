@@ -24,6 +24,7 @@
 
 static GLfloat sunPhase = 0.0f;
 static GLfloat days = 0.0f;
+static std::vector<GLuint> button_textures;
 
 GLuint starsTexture = 0, sunTexture = 0;
 std::vector<Planet> planets;
@@ -96,18 +97,6 @@ void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y, bool o
     glGetIntegerv(GL_VIEWPORT, viewport); // [x, y, w, h]
     y = opengl_coordinates ? y : (viewport[3] - y);
 
-    // Temporaly set 2D projection and disable lights
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0.0, viewport[2], 0.0, viewport[3]);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    glDisable(GL_LIGHTING);
-
     SDL_Color white = {255, 255, 255, 0};
     SDL_Surface *text_surface = TTF_RenderText_Blended(const_cast<TTF_Font*>(font), text, white);
     GLuint texture = 0;
@@ -134,12 +123,21 @@ void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y, bool o
     glDeleteTextures(1, &texture);
     SDL_FreeSurface(text_surface);
 
-    // Restore original matrices
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glEnable(GL_LIGHTING);
+}
+
+#include "bmp_loader.h"
+
+void drawButton(GLuint texture, GLuint y) {
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glBegin(GL_QUADS);
+    glTexCoord2d(0, 0); glVertex2i(10, y);
+    glTexCoord2d(1, 0); glVertex2i(10 + 50, y);
+    glTexCoord2d(1, 1); glVertex2i(10 + 50, y + 50);
+    glTexCoord2d(0, 1); glVertex2i(10, y + 50);
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 const char *elapsedDaysText = "Days elapsed: %.2f",
@@ -147,6 +145,22 @@ const char *elapsedDaysText = "Days elapsed: %.2f",
            *fpsText = "FPS: %u";
 
 void drawStats(const TTF_Font *font, Uint32 frames) {
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport); // [x, y, w, h]
+
+    // Temporaly set 2D projection and disable lights
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, viewport[2], 0.0, viewport[3]);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glDisable(GL_LIGHTING);
+
+
     int days_len = snprintf(NULL, 0, elapsedDaysText, days) + 1;
     char *days_str = (char*) malloc(days_len);
     snprintf(days_str, days_len, elapsedDaysText, days);
@@ -167,20 +181,49 @@ void drawStats(const TTF_Font *font, Uint32 frames) {
     drawText(fps_str, font, 10, 70);
     free(fps_str);
 
-    for (auto it = planets.begin(); it != planets.end(); it++)
+    Sint32 y1 = 79 + 50;
+
+    size_t i = 0;
+    for (auto it = planets.begin(); it != planets.end(); it++) {
         it->showTitle(font);
+        drawButton(button_textures[i++], viewport[3] - y1);
+        y1 += 59;
+    }
+
+    // Restore original matrices
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glEnable(GL_LIGHTING);
 }
 
 void initPlanets() {
-    planets.push_back(Planet(EARTH_RADIUS, ASTRONOMIC_UNIT, 0.016f, SIDERIAL_YEAR, 1.0f, 0.0f, EARTH_AXIS_INCLINATION, 0.0f, 0.0f, "textures/earth.bmp", -M_PI, "Earth"));
-    planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, 0.05f, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 6.68f, 0.0f, 0.0f, "textures/moon.bmp", 0.0f, "Moon"));
-
     //                       Radius               A                        Ecc    Year    Day      Incl   Tilt    Node    Perih.  Texture                 Phase  Name
     planets.push_back(Planet(EARTH_RADIUS * 0.38, ASTRONOMIC_UNIT * 0.39f, 0.2f,  87.9f,  58.6f,   7.0f,  0.03f,  48.33f, 29.12f, "textures/mercury.bmp", -M_PI, "Mercury"));
     planets.push_back(Planet(EARTH_RADIUS * 0.93, ASTRONOMIC_UNIT * 0.7f,  0.006f,224.7f, -243.0f, 3.39f, 177.3f, 76.67f, 55.18f, "textures/venus.bmp",   -M_PI, "Venus"));
+
+    planets.push_back(Planet(EARTH_RADIUS, ASTRONOMIC_UNIT, 0.016f, SIDERIAL_YEAR, 1.0f, 0.0f, EARTH_AXIS_INCLINATION, 0.0f, 0.0f, "textures/earth.bmp", -M_PI, "Earth"));
+    planets.back().addMoon(Planet(MOON_RADIUS, MOON_ORBIT_RADIUS, 0.05f, SIDERIAL_MONTH, SIDERIAL_MONTH, MOON_INCLINATION, 6.68f, 0.0f, 0.0f, "textures/moon.bmp", 0.0f, "Moon"));
+
     planets.push_back(Planet(EARTH_RADIUS * 0.53, ASTRONOMIC_UNIT * 1.52f, 0.09f, 686.9f, 1.02f,   1.85f, 25.19f, 49.5f,  286.5,  "textures/mars.bmp",    -M_PI, "Mars"));
+
     planets.push_back(Planet(EARTH_RADIUS * 11.0f,ASTRONOMIC_UNIT * 5.2f,  0.04f, 4332.5f,0.41f,   1.3f,  3.13f,  100.4f, 275.0f, "textures/jupiter.bmp", -M_PI, "Jupiter"));
     planets.back().addMoon(Planet(EARTH_RADIUS * 0.28f, ASTRONOMIC_UNIT * 0.002f, 0.004f, 1.8f, 1.8f, 0.05f, 0.0f, 0.0f, 0.0f, "textures/io.bmp", 0.0f, "Io"));
+    planets.back().addMoon(Planet(EARTH_RADIUS * 0.245f, ASTRONOMIC_UNIT * 0.0044f, 0.009f, 3.55f, 3.55f, 0.47f, 0.1f, 0.0f, 0.0f, "textures/europa.bmp", 0.0f, "Europa"));
+    planets.back().addMoon(Planet(EARTH_RADIUS * 0.413f, ASTRONOMIC_UNIT * 0.00715, 0.0013f, 7.15f, 7.15f, 0.2f, 0.3f, 0.0f, 0.0f, "textures/ganymede.bmp", 0.0f, "Ganymede"));
+    planets.back().addMoon(Planet(EARTH_RADIUS * 0.378f, ASTRONOMIC_UNIT * 0.01259f, 0.007f, 16.69f, 16.69f, 0.192f, 0.0f, 0.0f, 0.0f, "textures/callisto.bmp", 0.0f, "Callisto"));
+
+    button_textures.push_back(loadBMPTexture("textures/buttons/mercury.bmp"));
+    button_textures.push_back(loadBMPTexture("textures/buttons/venus.bmp"));
+    button_textures.push_back(loadBMPTexture("textures/buttons/earth.bmp"));
+    button_textures.push_back(loadBMPTexture("textures/buttons/mars.bmp"));
+    button_textures.push_back(loadBMPTexture("textures/buttons/jupiter.bmp"));
+}
+
+void freeTextures() {
+    for (auto it = button_textures.begin(); it != button_textures.end(); it++)
+        glDeleteTextures(1, &(*it));
 }
 
 void drawPlanets(bool orbits) {
