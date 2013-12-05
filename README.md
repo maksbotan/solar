@@ -29,6 +29,8 @@ Controls
 * f - toggle fullscreen mode
 * o - toggle orbits
 * q - quit program
+* v - toggle VSync (default is on)
+* h - show help message
 
 Buttons on the left edge of screen are for quick go-to function - when the a particular button is clicked, camera is moved to corresponding planet.
 

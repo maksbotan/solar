@@ -21,6 +21,7 @@
 #include "constants.h"
 #include "planet.h"
 #include "rendering.h"
+#include "bmp_loader.h"
 
 static GLfloat sunPhase = 0.0f;
 static GLfloat days = 0.0f;
@@ -125,7 +126,6 @@ void drawText(const char *text, const TTF_Font *font, GLuint x, GLuint y, bool o
 
 }
 
-#include "bmp_loader.h"
 
 void drawButton(GLuint texture, GLuint y) {
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -142,9 +142,22 @@ void drawButton(GLuint texture, GLuint y) {
 
 const char *elapsedDaysText = "Days elapsed: %.2f",
            *elapsedMonthsText = "Siderial months elapsed: %u",
-           *fpsText = "FPS: %u";
+           *fpsText = "FPS: %u",
+           *aboutText[] = {
+               "Simple Solar System model",
+               "Controls:",
+               " - w, a, s, d, z, x: camera movement",
+               " - left, right, up, down, PgUp, PgDown: camera rotation",
+               " - t: toggle speed acceleration by factor of 100",
+               " - r: reset camera to initial position",
+               " - o: orbits toggle",
+               " - f: toggle fullscreen",
+               " - v: toggle VSync",
+               " - h: this help",
+               " - q: quit program",
+               ""};
 
-void drawStats(const TTF_Font *font, Uint32 frames) {
+void drawStats(const TTF_Font *font, Uint32 frames, bool help) {
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport); // [x, y, w, h]
 
@@ -188,6 +201,14 @@ void drawStats(const TTF_Font *font, Uint32 frames) {
         it->showTitle(font);
         drawButton(button_textures[i++], viewport[3] - y1);
         y1 += 59;
+    }
+
+    if (help) {
+        // 266 and 362 are calculated for this particular font and text
+        const char **aboutString = aboutText;
+        y1 = (viewport[3] - 266) / 2;
+        while (**aboutString)
+            drawText(*(aboutString++), font, (viewport[2] - 362) / 2, y1 += 25);
     }
 
     // Restore original matrices

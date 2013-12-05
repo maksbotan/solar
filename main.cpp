@@ -22,7 +22,7 @@
 static GLfloat xpos = 0.0f, ypos = ASTRONOMIC_UNIT * 1.0f, zpos = ASTRONOMIC_UNIT * 2.5f;
 static GLfloat sight_x = 0.0f, sight_y = -0.43f, sight_z = -0.9f;
 static GLfloat up_x = 0.0f, up_y = 1.0f, up_z = 0.0f;
-static bool orbits = false, running = true;
+static bool orbits = false, running = true, vsync = true, help = false;
 static Uint32 last_time = 0, frames = 0;
 static SDL_Window *window = NULL;
 static TTF_Font *font = NULL;
@@ -78,7 +78,7 @@ void renderScene(void) {
     drawSun();
     drawPlanets(orbits);
     if (font)
-        drawStats(font, 1000 * frames / SDL_GetTicks());
+        drawStats(font, 1000 * frames / SDL_GetTicks(), help);
 
     SDL_GL_SwapWindow(window);
 }
@@ -188,6 +188,13 @@ void keyboard(SDL_Scancode key) {
             else
                 speed_factor = 100;
             break;
+        case SDL_SCANCODE_V:
+            vsync = !vsync;
+            SDL_GL_SetSwapInterval(vsync);
+            break;
+        case SDL_SCANCODE_H:
+            help = !help;
+            break;
         default:
             break;
     }
@@ -222,7 +229,7 @@ int main(int, char **) {
     TTF_Init();
     window = SDL_CreateWindow("Solar system", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext glcontext = SDL_GL_CreateContext(window);
-    SDL_GL_SetSwapInterval(1); // Enable VSYNC
+    SDL_GL_SetSwapInterval(vsync); // Enable VSYNC
     reshape(WIDTH, HEIGHT); // SDL does not send resize event on startup
 
     font = TTF_OpenFont("Vera.ttf", 16);
